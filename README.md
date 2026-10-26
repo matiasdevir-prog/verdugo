@@ -114,6 +114,27 @@ FILTER TEST — a RANDOM 'filter' tried 200 times:
 That last block is the lesson: a filter that looks good **once** is usually luck.
 Only one that helps **on average**, out-of-sample, net of cost, is real.
 
+## Example: a real edge that passed
+
+The gauntlet cuts both ways — it doesn't only kill smoke, it also lets a real edge
+through. Two of the author's own forex strategies (a rebound and a "spring")
+survived every stage: positive **net of real cost**, holding **out-of-sample**,
+and **positive every single year**. In plain terms — for every $100 risked on a
+trade, here's the average profit, by year:
+
+![Two strategies that passed Verdugo, by year](example_passed_by_year.png)
+
+*(The **how** — exact rules, instruments, timing — stays private. What's open here
+is the honest measuring tool, not the edge. And live trading is always the final
+judge.)*
+
+## Strategy library
+
+A growing set of **public-concept** strategies to run through the gauntlet lives
+in **[STRATEGIES.md](./STRATEGIES.md)** — previous-day breakout, gap continuation,
+volatility breakout, and more. They're candidates, not recommendations: that's the
+whole point. Don't trust the name — get the verdict.
+
 ## What Verdugo is *not*
 
 - It is **not** a strategy, and it will not give you one. It judges strategies.

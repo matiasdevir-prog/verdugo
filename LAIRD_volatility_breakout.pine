@@ -1,0 +1,42 @@
+//@version=5
+// LAIRD — 3er sistema de MDV. Ruptura por volatilidad (momentum).
+// Rompe la apertura +/- k*(rango de ayer) y sigue el envión. Baja correlación con Duke y Kai.
+strategy("MDV · Laird (Volatility Breakout)", overlay=true,
+     initial_capital=25000, default_qty_type=strategy.fixed, default_qty_value=1,
+     process_orders_on_close=true, calc_on_every_tick=false, pyramiding=0)
+
+k   = input.float(0.3, "Banda (x rango de ayer)", step=0.1)
+tpR = input.float(2.0, "Take Profit (R)", step=0.5)
+rth = input.session("0930-1600", "Sesión RTH (NY)")
+tz  = "America/New_York"
+
+pdh = request.security(syminfo.tickerid, "D", high[1], lookahead=barmerge.lookahead_on)
+pdl = request.security(syminfo.tickerid, "D", low[1],  lookahead=barmerge.lookahead_on)
+prng = pdh - pdl
+
+inRth  = not na(time(timeframe.period, rth, tz))
+newDay = ta.change(time("D")) != 0
+var float sopen = na
+if newDay
+    sopen := na
+if inRth and na(sopen)
+    sopen := open
+
+band = k * prng
+up = sopen + band
+dn = sopen - band
+plot(up,"Banda alta",color=color.new(color.teal,0),style=plot.style_linebr)
+plot(dn,"Banda baja",color=color.new(color.red,0),style=plot.style_linebr)
+
+longSig  = inRth and not na(sopen) and band>0 and high > up and strategy.position_size == 0
+shortSig = inRth and not na(sopen) and band>0 and low  < dn and strategy.position_size == 0
+
+if longSig
+    strategy.entry("L", strategy.long, alert_message="LAIRD LONG")
+    strategy.exit("Lx", from_entry="L", stop=sopen, limit=up + tpR*band, alert_message="LAIRD EXIT")
+if shortSig
+    strategy.entry("S", strategy.short, alert_message="LAIRD SHORT")
+    strategy.exit("Sx", from_entry="S", stop=sopen, limit=dn - tpR*band, alert_message="LAIRD EXIT")
+
+if strategy.position_size != 0 and not inRth
+    strategy.close_all(comment="Cierre de sesión")

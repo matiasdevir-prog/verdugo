@@ -1,0 +1,48 @@
+//@version=5
+// DUKE — sistema principal de MDV. Ruptura del día previo + filtro de tendencia.
+// Versión "dejar correr": ventana 9:30-11:00 (solo la primera hora y media) + TP4.
+strategy("MDV · Ruptura Día Previo PRO (PDH/PDL + tendencia)", overlay=true,
+     initial_capital=10000, default_qty_type=strategy.fixed, default_qty_value=1,
+     process_orders_on_close=true, calc_on_every_tick=false, pyramiding=0)
+
+tpR      = input.float(4.0, "Take Profit (R)", step=0.5)
+swingLen = input.int(30, "Largo del stop (barras)")
+winSess  = input.session("0930-1100", "Ventana de entrada (NY)")
+tz = "America/New_York"
+
+pdh = request.security(syminfo.tickerid, "D", high[1],  lookahead=barmerge.lookahead_on)
+pdl = request.security(syminfo.tickerid, "D", low[1],   lookahead=barmerge.lookahead_on)
+pdc = request.security(syminfo.tickerid, "D", close[1], lookahead=barmerge.lookahead_on)
+plot(pdh, "PDH", color=color.new(color.teal,0))
+plot(pdl, "PDL", color=color.new(color.red,0))
+
+inWin  = not na(time(timeframe.period, winSess, tz))
+isRth  = not na(time(timeframe.period, "0930-1600", tz))
+newDay = ta.change(time("D")) != 0
+
+var float dayOpen = na
+if newDay
+    dayOpen := na
+if isRth and na(dayOpen)
+    dayOpen := open
+bull = dayOpen > pdc
+
+stopLong  = ta.lowest(low,  swingLen)
+stopShort = ta.highest(high, swingLen)
+
+longSig  = inWin and bull       and high > pdh and strategy.position_size == 0
+shortSig = inWin and (not bull) and low  < pdl and strategy.position_size == 0
+
+if longSig
+    r = pdh - stopLong
+    if r > 0
+        strategy.entry("L", strategy.long, alert_message="DUKE PDH LONG")
+        strategy.exit("Lx", from_entry="L", stop=stopLong, limit=pdh + tpR*r, alert_message="DUKE EXIT")
+if shortSig
+    r = stopShort - pdl
+    if r > 0
+        strategy.entry("S", strategy.short, alert_message="DUKE PDL SHORT")
+        strategy.exit("Sx", from_entry="S", stop=stopShort, limit=pdl - tpR*r, alert_message="DUKE EXIT")
+
+if strategy.position_size != 0 and not isRth
+    strategy.close_all(comment="Cierre de sesión")

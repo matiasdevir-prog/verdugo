@@ -1,0 +1,30 @@
+//@version=5
+// KAI — segundo sistema de MDV. Continuación del gap de apertura.
+// Distinto a Duke (que rompe niveles del día previo). Baja correlación => diversifica.
+strategy("MDV · Kai (Continuación del Gap)", overlay=true,
+     initial_capital=10000, default_qty_type=strategy.fixed, default_qty_value=1,
+     process_orders_on_close=true, calc_on_every_tick=false, pyramiding=0)
+
+tpR = input.float(2.0, "Take Profit (R)", step=0.5)
+rth = input.session("0930-1600", "Sesión RTH (NY)")
+tz  = "America/New_York"
+
+pdc = request.security(syminfo.tickerid, "D", close[1], lookahead=barmerge.lookahead_on)
+plot(pdc, "Cierre ayer", color=color.new(color.gray,0), style=plot.style_linebr)
+
+inRth   = not na(time(timeframe.period, rth, tz))
+newSess = inRth and not inRth[1]
+
+if newSess and strategy.position_size == 0
+    gap  = open - pdc
+    risk = math.abs(gap)
+    if risk > 0
+        if gap > 0
+            strategy.entry("L", strategy.long, alert_message="KAI GAP LONG")
+            strategy.exit("Lx", from_entry="L", stop=pdc, limit=close + tpR*risk, alert_message="KAI EXIT")
+        else
+            strategy.entry("S", strategy.short, alert_message="KAI GAP SHORT")
+            strategy.exit("Sx", from_entry="S", stop=pdc, limit=close - tpR*risk, alert_message="KAI EXIT")
+
+if strategy.position_size != 0 and not inRth
+    strategy.close_all(comment="Cierre de sesión")
