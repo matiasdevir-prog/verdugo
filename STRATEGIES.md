@@ -31,11 +31,23 @@ Volatility breakout (momentum). It brackets the session open by a fraction of
 **yesterday's range** and rides whichever side breaks first. Stop back at the open,
 target 2R. The classic "let the day's energy pick the direction" idea.
 
-## More candidates (coming)
+## Verdicts so far (on FX, net of cost)
 
-Opening-range breakout (ORB), Bollinger + RSI mean-reversion, and the news
-straddle — the strategies everyone swears by. Each will land here with a Python
-port so you can run it straight through Verdugo.
+Three strategies everyone swears by, run through the gauntlet on 6 FX pairs
+(15-min bars, net of real cost). The code is in
+[`example_popular_strategies.py`](./example_popular_strategies.py) — point it at
+your own data and reproduce it.
+
+| Strategy | Trades | Win rate | Mean R | Verdict |
+|---|---|---|---|---|
+| Bollinger + RSI mean reversion | ~12,300 | 51% | −0.07 | **HUMO** |
+| Opening-range breakout (ORB) | ~4,400 | 47% | −0.09 | **HUMO** |
+| 15-min candle breakout (momentum) | ~326,000 | 47% | −0.20 | **HUMO** |
+
+All three lose money once you subtract real cost. That is not a flaw in the test —
+it's the whole point. The popular, good-looking stuff usually doesn't survive.
+(The news straddle needs a news-date dataset to judge honestly — coming when the
+data is in hand.)
 
 ## How to judge one
 
