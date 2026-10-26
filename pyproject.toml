@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verdugo"
+version = "0.1.0"
+description = "The honest backtest gauntlet that kills fake trading edges."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Matías De Virgilis" }]
+keywords = ["trading", "backtest", "quant", "forex", "out-of-sample", "overfitting"]
+dependencies = ["numpy>=1.23", "pandas>=1.5"]
+
+[project.urls]
+Homepage = "https://github.com/YOURUSER/verdugo"
+
+[tool.setuptools]
+py-modules = ["verdugo"]
