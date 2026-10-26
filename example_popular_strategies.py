@@ -54,6 +54,26 @@ def candle_breakout_15m(df):
     return df["high"] > df["high"].shift(1)
 
 
+def vwap_ema9_cross(df):
+    """
+    The viral "VWAP + EMA(9) cross on the 3-min chart" strategy.
+    Long when EMA9 crosses ABOVE the session VWAP (the video's 'calls').
+    VWAP here is volume-less (session cumulative mean of OHLC4) — spot FX has no
+    central volume, which is how VWAP is always approximated on FX anyway.
+    """
+    o, h, l, c = df["open"], df["high"], df["low"], df["close"]
+    ohlc4 = (o + h + l + c) / 4
+    t = pd.to_datetime(df["time"])
+    day = t.dt.date
+    grp = ohlc4.groupby(day)
+    vwap = grp.cumsum() / (grp.cumcount() + 1)
+    ema9 = c.ewm(span=9, adjust=False).mean()
+    sign = np.sign(ema9.values - vwap.values)
+    prev = np.roll(sign, 1)
+    prev[0] = sign[0]
+    return (prev <= 0) & (sign > 0)   # EMA9 crosses above VWAP
+
+
 def main(path):
     df = pd.read_csv(path)
     df.columns = [c.lower() for c in df.columns]
@@ -63,6 +83,7 @@ def main(path):
         ("Bollinger + RSI mean reversion", bollinger_rsi_mean_reversion, 2.0, 2.0),
         ("Opening-range breakout (ORB)", opening_range_breakout, 2.0, 2.0),
         ("15-min candle breakout", candle_breakout_15m, 1.5, 1.5),
+        ("VWAP + EMA9 cross (the viral one)", vwap_ema9_cross, 1.5, 1.5),
     ]
     for name, fn, sl, tp in strategies:
         g = Gauntlet(cost_pips=1.5, pip_size=0.0001, sl_atr=sl, tp_atr=tp, max_hold_bars=16)

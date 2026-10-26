@@ -43,8 +43,15 @@ your own data and reproduce it.
 | Bollinger + RSI mean reversion | ~12,300 | 51% | −0.07 | **HUMO** |
 | Opening-range breakout (ORB) | ~4,400 | 47% | −0.09 | **HUMO** |
 | 15-min candle breakout (momentum) | ~326,000 | 47% | −0.20 | **HUMO** |
+| VWAP + EMA9 cross, 3-min (the viral "insane" one) | ~44,300 | 48% | −0.31 | **HUMO** |
 
-All three lose money once you subtract real cost. That is not a flaw in the test —
+The last one is the strategy from those "I made 2000% in a month, you just need 2
+indicators" videos. Measured over 44,000 trades it loses on every metric and in
+**0% of the years**. The video shows you the 2 winners and hides the 44,000 that
+drain the account. That's exactly what crossovers do — they arrive *after* the
+move, so you enter late and the cost finishes you.
+
+All of these lose money once you subtract real cost. That is not a flaw in the test —
 it's the whole point. The popular, good-looking stuff usually doesn't survive.
 (The news straddle needs a news-date dataset to judge honestly — coming when the
 data is in hand.)
