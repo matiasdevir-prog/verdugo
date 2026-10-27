@@ -33,7 +33,7 @@ target 2R. The classic "let the day's energy pick the direction" idea.
 
 ## Verdicts so far (on FX, net of cost)
 
-Three strategies everyone swears by, run through the gauntlet on 6 FX pairs
+Five strategies everyone swears by, run through the gauntlet on FX
 (15-min bars, net of real cost). The code is in
 [`example_popular_strategies.py`](./example_popular_strategies.py) — point it at
 your own data and reproduce it.
@@ -44,6 +44,16 @@ your own data and reproduce it.
 | Opening-range breakout (ORB) | ~4,400 | 47% | −0.09 | **HUMO** |
 | 15-min candle breakout (momentum) | ~326,000 | 47% | −0.20 | **HUMO** |
 | VWAP + EMA9 cross, 3-min (the viral "insane" one) | ~44,300 | 48% | −0.31 | **HUMO** |
+| Short the oversold (the "ride the trend" trap) | ~1,900 | 45% | −0.15 | **HUMO** |
+
+That last row is the most instructive one. "Short the oversold" takes the **exact
+same entries** as the Bollinger + RSI mean reversion above — price below the lower
+band with RSI under 30 — and simply **sells instead of buying**, on the theory that
+in a downtrend you should ride the trend down. Flipping the direction turns a −0.07 R
+loser into a −0.15 R loser: you're selling one tick before the bounce that the
+mean-reversion crowd is buying, so you eat the rebound *and* the cost. Same signal,
+worse verdict — proof that "direction" is a decision the gauntlet has to judge too,
+not an afterthought.
 
 The last one is the strategy from those "I made 2000% in a month, you just need 2
 indicators" videos. Measured over 44,000 trades it loses on every metric and in

@@ -4,8 +4,8 @@ Three strategies everyone swears by — run through the Verdugo gauntlet.
 Each is a well-known public concept. Point it at your own OHLC data (a CSV with
 columns: time, open, high, low, close) and Verdugo tells you PASS or smoke.
 
-Spoiler from the author's own run on 6 FX pairs (15-min bars, net of cost):
-all three came back HUMO. That's not a bug in the strategies — it's what honest
+Spoiler from the author's own run on FX (15-min bars, net of cost):
+all of them came back HUMO. That's not a bug in the strategies — it's what honest
 testing looks like. The popular stuff usually doesn't survive real cost.
 
     python example_popular_strategies.py your_data.csv
@@ -54,6 +54,23 @@ def candle_breakout_15m(df):
     return df["high"] > df["high"].shift(1)
 
 
+def short_the_oversold(df):
+    """
+    The "follow the trend" trap: when price is deeply oversold (RSI<30 and below
+    the lower Bollinger band) in a downtrend, SELL to ride the trend down.
+    Feels smart in a falling market — but you're selling one tick before the
+    bounce that mean-reversion lives off. Run as direction='short'.
+    """
+    c = df["close"]
+    ma, sd = c.rolling(20).mean(), c.rolling(20).std()
+    lower = ma - 2 * sd
+    d = c.diff()
+    up = d.clip(lower=0).ewm(alpha=1/14, adjust=False).mean()
+    dn = (-d.clip(upper=0)).ewm(alpha=1/14, adjust=False).mean()
+    rsi = 100 - 100 / (1 + up / dn.replace(0, np.nan))
+    return (c < lower) & (rsi < 30)
+
+
 def vwap_ema9_cross(df):
     """
     The viral "VWAP + EMA(9) cross on the 3-min chart" strategy.
@@ -80,14 +97,15 @@ def main(path):
     if "time" not in df.columns:
         df = df.rename(columns={df.columns[0]: "time"})
     strategies = [
-        ("Bollinger + RSI mean reversion", bollinger_rsi_mean_reversion, 2.0, 2.0),
-        ("Opening-range breakout (ORB)", opening_range_breakout, 2.0, 2.0),
-        ("15-min candle breakout", candle_breakout_15m, 1.5, 1.5),
-        ("VWAP + EMA9 cross (the viral one)", vwap_ema9_cross, 1.5, 1.5),
+        ("Bollinger + RSI mean reversion", bollinger_rsi_mean_reversion, 2.0, 2.0, "long"),
+        ("Opening-range breakout (ORB)", opening_range_breakout, 2.0, 2.0, "long"),
+        ("15-min candle breakout", candle_breakout_15m, 1.5, 1.5, "long"),
+        ("VWAP + EMA9 cross (the viral one)", vwap_ema9_cross, 1.5, 1.5, "long"),
+        ("Short the oversold (the trend trap)", short_the_oversold, 2.0, 2.0, "short"),
     ]
-    for name, fn, sl, tp in strategies:
+    for name, fn, sl, tp, direction in strategies:
         g = Gauntlet(cost_pips=1.5, pip_size=0.0001, sl_atr=sl, tp_atr=tp, max_hold_bars=16)
-        res = g.run(df, fn(df), direction="long", time_col="time")
+        res = g.run(df, fn(df), direction=direction, time_col="time")
         v = res.verdict()
         s = res.summary()
         print(f"\n{name}")
